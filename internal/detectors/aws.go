@@ -35,7 +35,7 @@ func (d *AWSKeyDetector) Detect(line string, lineNum int, filePath string) []mod
 		return findings
 	}
 
-	if matches := d.secretPattern.FindAllStringSubmatchIndex(line, -1); len(matches) != nil {
+	if matches := d.secretPattern.FindAllStringSubmatchIndex(line, -1); matches != nil {
 		for _, loc := range matches {
 			if len(loc) >= 4 {
 				matched := line[loc[2]:loc[3]]

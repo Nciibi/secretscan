@@ -13,7 +13,7 @@ const (
 	SeverityLow      Severity = "low"
 )
 
-// SeverityWeight returns a numeric weight for sorting (higher = more severe).
+// Weight returns a numeric weight for sorting (higher = more severe).
 func (s Severity) Weight() int {
 	switch s {
 	case SeverityCritical:
@@ -37,6 +37,16 @@ const (
 	SourceGitHistory Source = "git-history"
 )
 
+// ValidationStatus represents the result of live secret validation.
+type ValidationStatus string
+
+const (
+	ValidationUnknown  ValidationStatus = "unknown"
+	ValidationActive   ValidationStatus = "active"
+	ValidationInactive ValidationStatus = "inactive"
+	ValidationError    ValidationStatus = "error"
+)
+
 // Finding represents a single detected secret leak.
 type Finding struct {
 	Type       string   `json:"type"`
@@ -54,6 +64,18 @@ type Finding struct {
 	CommitHash    string `json:"commit_hash,omitempty"`
 	CommitMessage string `json:"commit_message,omitempty"`
 	CommitAuthor  string `json:"commit_author,omitempty"`
+
+	// Validation status (populated only when --validate is used).
+	Validation ValidationStatus `json:"validation,omitempty"`
+
+	// Encoding type if secret was found via decode pass.
+	EncodingType string `json:"encoding_type,omitempty"`
+
+	// MatchedValue holds the raw matched string (not shown in output, used internally).
+	MatchedValue string `json:"-"`
+
+	// LineContent holds the full line content (used for baseline fingerprinting).
+	LineContent string `json:"-"`
 }
 
 // ID returns a deduplication key for this finding.
@@ -63,12 +85,13 @@ func (f Finding) ID() string {
 
 // ScanResult aggregates all findings from a scan.
 type ScanResult struct {
-	Findings  []Finding `json:"findings"`
-	ScannedFiles int    `json:"scanned_files"`
-	ScannedCommits int  `json:"scanned_commits,omitempty"`
-	Duration  string    `json:"duration"`
-	ScanPath  string    `json:"scan_path"`
-	ScanMode  string    `json:"scan_mode"`
+	Findings       []Finding `json:"findings"`
+	ScannedFiles   int       `json:"scanned_files"`
+	ScannedCommits int       `json:"scanned_commits,omitempty"`
+	Duration       string    `json:"duration"`
+	ScanPath       string    `json:"scan_path"`
+	ScanMode       string    `json:"scan_mode"`
+	Suppressed     int       `json:"suppressed,omitempty"`
 }
 
 // HasFindings returns true if any findings were detected.
