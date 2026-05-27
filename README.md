@@ -1,7 +1,7 @@
 <h1 align="center">🔍 secretscan</h1>
 
 <p align="center">
-  <strong>A fast, local secret leak scanner for developer repositories</strong>
+  <strong>A fast, production-grade local secret leak scanner for developer repositories</strong>
 </p>
 
 <p align="center">
@@ -30,6 +30,10 @@ Unlike cloud-based scanners, secretscan runs **entirely locally** — your code 
 - 📜 **Git history** — finds secrets in old commits, even if deleted
 - 🔌 **Pluggable** — add custom patterns via config
 - 🏗️ **CI-ready** — JSON/SARIF output, exit codes, GitHub Actions support
+- ✅ **Live validation** — optionally probe secrets to check if they're still active
+- 📋 **Baseline suppression** — suppress known findings, only alert on new ones
+- ⏱️ **Incremental scanning** — scan only changed files with `--since`
+- 🔓 **Obfuscation detection** — decode base64/hex/URL-encoded secrets
 
 ## Features
 
@@ -43,49 +47,72 @@ Unlike cloud-based scanners, secretscan runs **entirely locally** — your code 
 | 📋 Multiple output formats | Terminal (pretty), JSON, SARIF |
 | ⚙️ Config file | `.secretscan.yaml` for project-specific settings |
 | 🔌 Custom patterns | Add your own regex detectors via config |
+| ✅ Live validation | `--validate` probes AWS, GitHub, Stripe endpoints |
+| 📋 Baseline suppression | `--update-baseline` / auto-load baseline |
+| ⏱️ Incremental scan | `--since main` scans only changed files |
+| 🔓 Obfuscation decode | Auto-decodes base64, hex, URL-encoded secrets |
 | 🏃 Pre-commit hook | Block commits containing secrets |
-| 🤖 GitHub Actions | Ready-to-use CI workflow |
+| 🤖 GitHub Actions | Ready-to-use CI workflow + GoReleaser |
 
-### Detected Secret Types
+### Detected Secret Types (25+ detectors)
 
-| Type | Example Pattern | Severity |
-|------|----------------|----------|
-| AWS Access Keys | `AKIA...` | Critical |
-| AWS Secret Keys | Context-based detection | Critical |
-| GitHub Tokens | `ghp_`, `github_pat_` | Critical |
-| OpenAI API Keys | `sk-...`, `sk-proj-...` | High |
-| Slack Tokens | `xoxb-`, `xoxp-` | High |
-| Slack Webhooks | `hooks.slack.com/services/...` | High |
-| Stripe Keys | `sk_live_`, `pk_live_` | Critical |
-| Google/Firebase API Keys | `AIza...` | High |
-| Private Keys (RSA/PEM) | `-----BEGIN PRIVATE KEY-----` | Critical |
-| JWT Tokens | `eyJ...` embedded tokens | High |
-| JWT Signing Secrets | `jwt_secret = "..."` | Critical |
-| Hardcoded Passwords | `password = "..."` | High |
-| Database Connection Strings | `postgresql://user:pass@...` | High |
-| High-Entropy Strings | Context + entropy analysis | Medium |
+| Type | Detector | Severity |
+|------|----------|----------|
+| AWS Access Keys | `aws-key` | Critical |
+| AWS Secret Keys | `aws-key` | Critical |
+| GitHub Tokens | `github-token` | Critical |
+| OpenAI API Keys | `openai-key` | High |
+| Slack Tokens | `slack-token` | High |
+| Slack Webhooks | `slack-token` | High |
+| Stripe Keys | `stripe-key` | Critical |
+| Google/Firebase API Keys | `firebase` | High |
+| Private Keys (RSA/PEM) | `private-key` | Critical |
+| JWT Tokens | `jwt` | High |
+| JWT Signing Secrets | `jwt` | Critical |
+| Hardcoded Passwords | `password` | High |
+| Database Connection Strings | `connection-string` | High |
+| Azure SAS Tokens | `azure-sas` | High |
+| Azure Connection Strings | `azure-connection` | Critical |
+| GCP API Keys | `gcp-api-key` | High |
+| GCP Service Account Keys | `gcp-service-account` | Critical |
+| Twilio Account SIDs | `twilio-sid` | High |
+| Twilio Auth Tokens | `twilio-auth` | High |
+| SendGrid API Keys | `sendgrid` | High |
+| Mailgun API Keys | `mailgun` | High |
+| npm Tokens | `npm-token` | High |
+| PyPI API Tokens | `pypi-token` | High |
+| Docker Hub Tokens | `dockerhub-token` | High |
+| Cloudflare API Tokens | `cloudflare-token` | High |
+| HashiCorp Vault Tokens | `vault-token` | Critical |
+| High-Entropy Strings | `high-entropy` | Medium |
 
 ## Installation
+
+### Quick Install (Linux/macOS)
+
+```bash
+curl -sSfL https://raw.githubusercontent.com/Nciibi/secretscan/main/scripts/install.sh | sh
+```
 
 ### From Source
 
 ```bash
-# Clone the repository
-git clone https://github.com/secretscan/secretscan.git
+git clone https://github.com/Nciibi/secretscan.git
 cd secretscan
-
-# Build
 go build -o secretscan ./cmd/secretscan
-
-# Install globally
 go install ./cmd/secretscan
 ```
+
+### From Releases
+
+Download the latest binary for your platform from
+[GitHub Releases](https://github.com/Nciibi/secretscan/releases).
 
 ### Verify Installation
 
 ```bash
 secretscan version
-# secretscan v1.0.0
+# secretscan v2.0.0
 ```
 
 ## Quick Start
@@ -94,13 +121,16 @@ secretscan version
 # Scan current directory
 secretscan scan .
 
-# Scan a specific project
-secretscan scan /path/to/project
+# Scan with live secret validation
+secretscan scan . --validate
+
+# Scan only files changed since main branch
+secretscan scan . --since main
 
 # Scan git history
 secretscan git .
 
-# Initialize config files in your project
+# Initialize config files
 secretscan init
 
 # Output as JSON
@@ -108,6 +138,12 @@ secretscan scan . --output json
 
 # Output as SARIF (for GitHub Code Scanning)
 secretscan scan . --output sarif > results.sarif
+
+# Save baseline (suppress known findings)
+secretscan scan . --update-baseline
+
+# Subsequent scans auto-suppress baselined findings
+secretscan scan .
 ```
 
 ## Usage
@@ -121,29 +157,31 @@ Recursively scans a directory for secrets in text files.
 ```bash
 secretscan scan .
 secretscan scan ./src --output json
-secretscan scan /project -o sarif -w 16 > report.sarif
+secretscan scan . --validate --since HEAD~5
+secretscan scan . --update-baseline
+secretscan scan /project -o sarif > report.sarif
 ```
+
+Flags specific to `scan`:
+| Flag | Description |
+|------|-------------|
+| `--since <ref>` | Scan only files changed since the given git ref |
+| `--update-baseline` | Write current findings to `.secretscan-baseline.json` |
+| `--no-baseline` | Ignore existing baseline file |
 
 #### `secretscan git <path>`
 
-Scans Git commit history for secrets that were committed in the past.
+Scans Git commit history for past secrets.
 
 ```bash
 secretscan git .
 secretscan git ./my-repo --include-filesystem
-secretscan git . --output json
+secretscan git . --validate --output json
 ```
-
-Options:
-- `--include-filesystem` — also scan current files alongside history
 
 #### `secretscan init`
 
-Creates default `.secretscan.yaml` and `.secretignore` files in the current directory.
-
-```bash
-secretscan init
-```
+Creates default `.secretscan.yaml` and `.secretignore` files.
 
 #### `secretscan version`
 
@@ -160,6 +198,8 @@ Prints the current version.
 | `--verbose` | `-v` | Enable verbose output | `false` |
 | `--max-size` | | Maximum file size (bytes) | `10485760` |
 | `--entropy` | | Entropy threshold | `4.0` |
+| `--validate` | `-V` | Probe detected secrets for liveness | `false` |
+| `--no-decode` | | Disable base64/hex/URL decode pass | `false` |
 
 ### Exit Codes
 
@@ -169,41 +209,95 @@ Prints the current version.
 | `1` | Secrets detected |
 | `2` | Invalid usage or configuration error |
 
-This makes secretscan CI-friendly:
+## Live Validation (`--validate`)
+
+When `--validate` / `-V` is passed, secretscan makes lightweight API probes to check if detected secrets are still active:
+
+| Detector | Probe Endpoint | Active Signal |
+|----------|---------------|---------------|
+| AWS Keys | `POST sts.amazonaws.com/?Action=GetCallerIdentity` | 200 = active |
+| GitHub Tokens | `GET api.github.com` with auth header | X-RateLimit header present |
+| Stripe Keys | `GET api.stripe.com/v1/balance` with bearer | 200 = active |
+| All others | — | Marked as "unvalidated" |
+
+Terminal output shows: 🟢 active, 🔴 inactive, ⚪ unvalidated
+
+**Validation is OFF by default.** Only runs when explicitly requested.
+
+## Baseline Suppression
+
+Teams can snapshot current findings and only alert on NEW secrets:
 
 ```bash
-secretscan scan . || echo "Secrets found!"
+# Save current findings as baseline
+secretscan scan . --update-baseline
+
+# Later scans auto-suppress baselined findings
+secretscan scan .
+# Output: "ℹ️  5 findings suppressed by baseline"
+
+# See all findings (ignore baseline)
+secretscan scan . --no-baseline
 ```
+
+Baseline file format (`.secretscan-baseline.json`):
+```json
+{
+  "version": 1,
+  "generated_at": "2024-01-15T10:30:00Z",
+  "findings": [
+    {
+      "fingerprint": "sha256...",
+      "detector": "aws-key",
+      "file": "config/.env",
+      "line": 3
+    }
+  ]
+}
+```
+
+## Incremental Scanning (`--since`)
+
+Scan only files changed since a git ref — makes pre-commit hooks fast on large repos:
+
+```bash
+secretscan scan . --since HEAD        # changed vs HEAD (staged changes)
+secretscan scan . --since main        # changed vs main branch
+secretscan scan . --since abc1234     # changed since commit
+```
+
+Falls back to full scan with a warning if the ref cannot be resolved.
+
+## Obfuscation Detection
+
+secretscan automatically attempts to decode obfuscated content before scanning:
+
+1. **Base64** — decodes `[A-Za-z0-9+/=]{20,}` strings
+2. **Hex** — decodes `[0-9a-fA-F]{32,}` strings
+3. **URL encoding** — runs `url.QueryUnescape` on lines with `%`
+
+If a secret is found in decoded content, the output shows:
+```
+💬 AWS_KEY=AKIA... (detected via base64 decode)
+```
+
+Disable with `--no-decode`.
 
 ## Configuration
 
 ### Config File (`.secretscan.yaml`)
 
 ```yaml
-# Maximum file size to scan (bytes)
 max_file_size: 10485760
-
-# Concurrent scanning workers
 max_workers: 8
-
-# Output format: text, json, sarif
 output_format: text
-
-# Entropy threshold (0-8 scale)
 entropy_threshold: 4.0
-
-# Scan git history too
 include_git_history: false
-
-# Paths to exclude
 exclude_paths:
   - .git
   - node_modules
   - dist
-  - build
-  - vendor
 
-# Custom detection patterns
 custom_patterns:
   - name: "Internal API Key"
     pattern: "MYCOMPANY_[A-Z0-9]{32}"
@@ -214,22 +308,11 @@ custom_patterns:
 
 ### Ignore File (`.secretignore`)
 
-Uses `.gitignore` syntax:
+Uses `.gitignore` syntax with negation support:
 
 ```gitignore
-# Ignore dependencies
 node_modules/
-vendor/
-
-# Ignore build output
-dist/
-build/
-
-# Ignore specific files
 *.log
-*.lock
-
-# But scan this specific file
 !important.env
 ```
 
@@ -240,22 +323,26 @@ build/
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                     CLI (Cobra)                         │
-│                scan | git | init | version               │
-├─────────────┬────────────┬──────────────────────────────┤
-│  Config     │  Ignore    │  Report Writer               │
-│  (.yaml)    │  (.ignore) │  (text / json / sarif)       │
-├─────────────┴────────────┴──────────────────────────────┤
+│          scan | git | init | version                    │
+│  --validate  --since  --update-baseline  --no-decode    │
+├──────────┬───────────┬──────────────────────────────────┤
+│ Config   │ Ignore    │ Report Writer                    │
+│ (.yaml)  │ (.ignore) │ (text / json / sarif)            │
+├──────────┼───────────┼──────────────────────────────────┤
+│ Baseline │ Validator │ Decoder                          │
+│ (.json)  │ (HTTP)    │ (b64/hex/url)                    │
+├──────────┴───────────┴──────────────────────────────────┤
 │                Scanner Engine                           │
-│          ┌─────────────┬──────────────┐                 │
-│          │ File Scanner│ Git Scanner  │                 │
-│          │ (workers)   │ (commits)    │                 │
-│          └──────┬──────┴──────┬───────┘                 │
-│                 └──────┬──────┘                         │
-│              Detector Registry                          │
-│   ┌────────┬────────┬────────┬────────┬──────────┐     │
-│   │  AWS   │ GitHub │ Stripe │  JWT   │ Custom   │     │
-│   │  Keys  │ Tokens │  Keys  │ Tokens │ Patterns │     │
-│   └────────┴────────┴────────┴────────┴──────────┘     │
+│        ┌─────────────┬──────────────┐                   │
+│        │ File Scanner│ Git Scanner  │                   │
+│        │ (workers)   │ (commits)    │                   │
+│        └──────┬──────┴──────┬───────┘                   │
+│               └──────┬──────┘                           │
+│            Detector Registry (25+)                      │
+│  ┌──────┬────────┬───────┬───────┬──────┬────────┐     │
+│  │ AWS  │ GitHub │ Azure │ GCP   │Twilio│ Custom │     │
+│  │ Keys │ Tokens │ SAS   │ SA    │ SID  │Patterns│     │
+│  └──────┴────────┴───────┴───────┴──────┴────────┘     │
 ├─────────────────────────────────────────────────────────┤
 │                 Entropy Engine                          │
 │            Shannon entropy scoring                      │
@@ -264,120 +351,42 @@ build/
 
 ### Detection Strategy
 
-secretscan uses **multi-signal analysis** instead of regex alone:
+Multi-signal analysis instead of regex alone:
 
-1. **Regex Match** — Pattern matches a known secret format (+30 confidence)
-2. **Context Keywords** — Words like `key`, `secret`, `token` nearby (+20 confidence)
-3. **Entropy Score** — High randomness suggests real secrets (+15–25 confidence)
-4. **Type Validation** — Secret-specific checks like prefix/length (+25 confidence)
+1. **Regex Match** (+30 confidence)
+2. **Context Keywords** (`key`, `secret`, `token` nearby) (+20)
+3. **Entropy Score** (high randomness) (+15–25)
+4. **Type Validation** (prefix/length checks) (+25)
 
-Each finding receives a **confidence score from 0 to 100**. Only findings above the threshold (25) are reported.
+Each finding scores 0–100. Only findings above threshold (25) are reported.
 
-### False Positive Reduction
+### Precision/Recall Benchmark
 
-- Placeholder values (`example`, `your_`, `placeholder`, `changeme`) are filtered
-- Low-entropy strings are deprioritized
-- Ambiguous matches are scored as medium confidence, not critical
-- Context keywords must be present for generic patterns
-- Lock files and binary files are skipped by default
-
-### Git History Scanning
-
-When using `secretscan git`, the tool:
-
-1. Opens the Git repository and iterates commits from HEAD
-2. For each commit, computes the diff against its parent
-3. Scans only **added lines** in diffs (not removed or unchanged)
-4. Deduplicates findings — same secret in multiple commits is reported once
-5. Includes commit hash, message, and author in findings
-
-## Output Examples
-
-### Terminal Output
-
-```
-🔍 secretscan results
-   Path: ./my-project | Mode: filesystem | Duration: 234ms
-   Files scanned: 156
-──────────────────────────────────────────────────────────────
-
-📊 Summary: 3 findings
-   🔴 Critical: 1
-   🟠 High: 1
-   🟡 Medium: 1
-──────────────────────────────────────────────────────────────
-
-[1] 🔴 CRITICAL | AWS Access Key
-    📁 config/.env:3:15
-    🔎 Detector: aws-key | Confidence: 90% | Source: filesystem
-    📝 Matched AWS Access Key pattern; context keyword 'key' found nearby
-    💬 AWS_ACCESS_KEY_ID=AKIA****************MPLE
-
-[2] 🟠 HIGH | Hardcoded Password
-    📁 app/settings.py:42:12
-    🔎 Detector: password | Confidence: 75% | Source: filesystem
-    📝 Hardcoded password assignment detected
-    💬 password = "s3cr3t_..."
-```
-
-### JSON Output
-
-```json
-{
-  "findings": [
-    {
-      "type": "AWS Access Key",
-      "severity": "critical",
-      "confidence": 90,
-      "file": "config/.env",
-      "line": 3,
-      "column": 15,
-      "preview": "AWS_ACCESS_KEY_ID=AKIA...",
-      "reason": "Matched AWS Access Key pattern",
-      "detector": "aws-key",
-      "source": "filesystem"
-    }
-  ],
-  "scanned_files": 156,
-  "duration": "234ms",
-  "scan_path": "./my-project",
-  "scan_mode": "filesystem"
-}
-```
-
-### SARIF Output
-
-SARIF output can be uploaded to GitHub Code Scanning:
-
+Run the built-in benchmark tool:
 ```bash
-secretscan scan . --output sarif > results.sarif
+go run ./cmd/benchmark
 ```
 
-The SARIF output conforms to v2.1.0 and is compatible with:
-- GitHub Code Scanning
-- Azure DevOps
-- VS Code SARIF Viewer
+Output:
+```
+Detector         TP   FP   FN   Precision  Recall
+aws-key           3    0    0   100.0%     100.0%
+github-token      2    0    0   100.0%     100.0%
+stripe-key        2    0    0   100.0%     100.0%
+...
+```
 
 ## CI/CD Integration
 
 ### GitHub Actions
 
-Add the included workflow (`.github/workflows/secretscan.yml`):
-
-```yaml
-- name: Run secretscan
-  run: ./secretscan scan . --output sarif > results.sarif
-
-- name: Upload SARIF
-  uses: github/codeql-action/upload-sarif@v3
-  with:
-    sarif_file: results.sarif
-```
+The repo includes two workflows:
+- `.github/workflows/secretscan.yml` — runs on push/PR with SARIF upload
+- `.github/workflows/release.yml` — builds cross-platform binaries via GoReleaser
 
 ### Pre-commit Hook
 
 ```bash
-# Install the pre-commit hook
 cp scripts/pre-commit.sh .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 ```
@@ -386,72 +395,65 @@ chmod +x .git/hooks/pre-commit
 
 ```
 secretscan/
-├── cmd/secretscan/main.go         # Entry point
+├── cmd/
+│   ├── secretscan/main.go         # CLI entry point
+│   └── benchmark/main.go          # Precision/recall benchmark tool
 ├── internal/
-│   ├── cli/                        # CLI commands (Cobra)
-│   │   ├── root.go                 # Root command and flags
-│   │   ├── scan.go                 # Filesystem scan command
-│   │   ├── git.go                  # Git history scan command
-│   │   └── init.go                 # Init command
-│   ├── config/                     # Configuration loading
-│   ├── detectors/                  # Secret detection logic
-│   │   ├── detectors.go            # Base detector + helpers
-│   │   ├── registry.go             # Detector registry
-│   │   ├── aws.go                  # AWS key detector
-│   │   ├── github.go               # GitHub token detector
-│   │   ├── apikeys.go              # OpenAI, Slack, Stripe
-│   │   ├── secrets.go              # Private keys, JWT, passwords
-│   │   └── custom.go               # Custom pattern detector
+│   ├── cli/                        # Cobra CLI commands
+│   ├── config/                     # YAML configuration
+│   ├── baseline/                   # Baseline suppression system
+│   ├── validate/                   # Live secret validation probes
+│   ├── detectors/                  # 25+ secret detectors
+│   │   ├── aws.go, github.go       # Original detectors
+│   │   ├── cloud.go                # Azure, GCP detectors
+│   │   ├── comms.go                # Twilio, SendGrid, Mailgun
+│   │   ├── infra.go                # npm, PyPI, Docker, Vault
+│   │   ├── custom.go               # User-defined patterns
+│   │   └── testdata/               # Benchmark corpus
 │   ├── entropy/                    # Shannon entropy scoring
 │   ├── ignore/                     # .secretignore matcher
 │   ├── models/                     # Core data structures
-│   ├── report/                     # Output formatting
-│   │   ├── report.go               # Text + JSON output
-│   │   └── sarif.go                # SARIF output
-│   ├── scanner/
-│   │   ├── scanner.go              # Deduplication
-│   │   ├── files/                  # Filesystem scanner
-│   │   └── git/                    # Git history scanner
-│   └── util/                       # Shared utilities
-├── scripts/pre-commit.sh           # Pre-commit hook
-├── .github/workflows/              # CI workflow
+│   ├── report/                     # Output (text/json/sarif)
+│   ├── scanner/files/              # Filesystem scanner
+│   ├── scanner/git/                # Git history scanner
+│   └── util/                       # Utilities + decode.go
+├── scripts/
+│   ├── install.sh                  # curl-pipe-sh installer
+│   └── pre-commit.sh               # Git pre-commit hook
+├── .github/workflows/
+│   ├── secretscan.yml              # CI scan workflow
+│   └── release.yml                 # GoReleaser workflow
+├── .goreleaser.yaml                # Cross-platform build config
 ├── .secretscan.yaml                # Sample config
 ├── .secretignore                   # Sample ignore file
-├── go.mod
-├── LICENSE
 └── README.md
 ```
 
 ## Limitations
 
-- **No remote scanning** — secretscan only works on local repositories
-- **No auto-remediation** — it reports findings but doesn't fix them
-- **Large repos** — very large repositories with deep history may take time
-- **Binary files** — binary content is skipped (by design)
-- **Encrypted files** — cannot scan encrypted or encoded content
-- **Custom formats** — proprietary secret formats need custom patterns
-- **No API validation** — does not call APIs to verify if secrets are active
+- **No remote scanning** — local repositories only
+- **No auto-remediation** — reports but doesn't fix
+- **Large repos** — deep history scanning may be slow
+- **Binary files** — skipped by design
+- **Encrypted files** — cannot scan encrypted content
+- **Validation coverage** — only AWS/GitHub/Stripe support live probes
 
 ## Roadmap
 
-- [ ] Incremental scanning (only changed files)
-- [ ] Baseline file to suppress known findings
 - [ ] IDE plugins (VS Code, JetBrains)
 - [ ] Secret rotation recommendations
-- [ ] Support for additional VCS (Mercurial, SVN)
 - [ ] Web dashboard for scan results
 - [ ] Multi-repo scanning
-- [ ] SOCKS/proxy support for enterprise environments
+- [ ] Additional validation endpoints (Slack, Azure, GCP)
 
 ## Contributing
-
-Contributions are welcome! Please:
 
 1. Fork the repository
 2. Create a feature branch
 3. Add tests for new functionality
 4. Run `go test ./...` and `go vet ./...`
-5. Submit a pull request
+5. Run `go run ./cmd/benchmark` to verify precision/recall
+6. Submit a pull request
 
 ## License
 

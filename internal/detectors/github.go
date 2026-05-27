@@ -26,33 +26,36 @@ func NewGitHubTokenDetector() *GitHubTokenDetector {
 }
 
 func (d *GitHubTokenDetector) Detect(line string, lineNum int, filePath string) []models.Finding {
-	var findings []models.Finding
-
 	if isFalsePositive(line) {
 		return nil
 	}
+
+	var findings []models.Finding
 
 	// Classic tokens.
 	findings = append(findings, d.baseDetect(line, lineNum, filePath)...)
 
 	// Fine-grained PATs.
-	if matches := d.fineGrainedPattern.FindAllStringIndex(line, -1); matches != nil {
+	if matches := d.fineGrainedPattern.FindAllStringSubmatchIndex(line, -1); matches != nil {
 		for _, loc := range matches {
-			matched := line[loc[0]:loc[1]]
+			if len(loc) < 4 {
+				continue
+			}
+			matched := line[loc[2]:loc[3]]
 			confidence := computeConfidence(true, true, 0, true)
 			findings = append(findings, models.Finding{
-				Type:       "GitHub Fine-Grained Token",
-				Severity:   models.SeverityCritical,
-				Confidence: confidence,
-				File:       filePath,
-				Line:       lineNum,
-				Column:     loc[0] + 1,
-				Preview:    truncateContext(line, loc[0], loc[1]),
-				Reason:     "Matched GitHub fine-grained PAT pattern (github_pat_ prefix)",
-				Detector:   d.name,
-				Source:     models.SourceFilesystem,
+				Type:         "GitHub Fine-Grained Token",
+				Severity:     models.SeverityCritical,
+				Confidence:   confidence,
+				File:         filePath,
+				Line:         lineNum,
+				Column:       loc[2] + 1,
+				Preview:      truncateContext(line, loc[2], loc[3]),
+				Reason:       "Matched GitHub fine-grained PAT pattern (github_pat_ prefix)",
+				Detector:     d.name,
+				Source:       models.SourceFilesystem,
+				MatchedValue: matched,
 			})
-			_ = matched
 		}
 	}
 
