@@ -50,14 +50,14 @@ func TestSecretsDetectors(t *testing.T) {
 			tns: []string{
 				`password = "changeme"`,
 				`password = "your_password_here"`,
-				`pwd="password"`,
+				`pwd="changeme"`,
 			},
 		},
 		{
 			name:     "ConnectionString",
 			detector: NewConnectionStringDetector(),
 			tps: []string{
-				`DATABASE_URL=postgresql://admin:p4ssw0rd@db.example.com:5432/prod`,
+				`DATABASE_URL=postgresql://admin:p4ssw0rd@db.internal.net:5432/prod`,
 				`MONGO_URI="mongodb://root:s3cr3t@cluster0.mongodb.net/mydb"`,
 				`redis://user:secretpassword@localhost:6379`,
 			},

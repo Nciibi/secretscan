@@ -15,9 +15,10 @@ func TestCommsDetectors(t *testing.T) {
 			name:     "TwilioSID",
 			detector: NewTwilioSIDDetector(),
 			tps: []string{
-				`TWILIO_SID=AC1234567890abcdef1234567890abcdef`,
-				`account_sid = "ACabcdef1234567890abcdef1234567890"`,
-				`export TWILIO_ACCOUNT_SID=AC11111111111111111111111111111111`,
+				// AC prefix + 32 lowercase hex chars, not real SIDs.
+				`TWILIO_SID=AC9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d`,
+				`account_sid = "AC1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d"`,
+				`export TWILIO_ACCOUNT_SID=AC0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a`,
 			},
 			tns: []string{
 				`TWILIO_SID=ACyour_account_sid_here_xxxxxxxxx`,
@@ -29,12 +30,12 @@ func TestCommsDetectors(t *testing.T) {
 			name:     "TwilioAuthToken",
 			detector: NewTwilioAuthTokenDetector(),
 			tps: []string{
-				`TWILIO_AUTH_TOKEN=1234567890abcdef1234567890abcdef`,
-				`twilio_auth_token: "abcdef1234567890abcdef1234567890"`,
-				`export TWILIO_AUTH_TOKEN=0987654321fedcba0987654321fedcba`,
+				`TWILIO_AUTH_TOKEN=9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d`,
+				`twilio_auth_token: "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d"`,
+				`export TWILIO_AUTH_TOKEN=0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a`,
 			},
 			tns: []string{
-				`TWILIO_AUTH_TOKEN=your_auth_token_here_xxxxxxxxx`, // May not match hex regex, or low entropy
+				`TWILIO_AUTH_TOKEN=your_auth_token_here_xxxxxxxxx`,
 				`TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`,
 				`TWILIO_AUTH_TOKEN=placeholder`,
 			},
@@ -43,9 +44,9 @@ func TestCommsDetectors(t *testing.T) {
 			name:     "SendGrid",
 			detector: NewSendGridDetector(),
 			tps: []string{
-				`SENDGRID_KEY=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`,
-				`sg_key: "SG.ABCDEFGHIJKLMNOPQRSTUV.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ"`,
-				`api_key="SG.1234567890123456789012.1234567890123456789012345678901234567890123"`,
+				`SENDGRID_KEY=SG.Vb9Xr2Lm7nQp4KwJ01Hs8Y.Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv4Gs0Tc5Rn7Jp3Wm6Xd9Lb2K`,
+				`sg_key: "SG.Wb4Nm8Jp3Rc6Fg5Mn2Kp9L.Hs8Yd3Rc6Fg5Mn2Kp9Lm7nQp4KwJ01Vb9Xr2Lm7nQp4KwJ0"`,
+				`api_key="SG.0d1e2f3a4b5c6d7e8f9a0b.Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv4Gs0Tc5Rn7Jp3Wm6Xd9Lb2K"`,
 			},
 			tns: []string{
 				`SENDGRID_KEY=SG.your_api_key_here.your_api_key_here_xxxx`,
@@ -57,9 +58,9 @@ func TestCommsDetectors(t *testing.T) {
 			name:     "Mailgun",
 			detector: NewMailgunDetector(),
 			tps: []string{
-				`MAILGUN_API_KEY=key-1234567890abcdef1234567890abcdef`,
-				`mailgun_key: "key-abcdef1234567890abcdef1234567890"`,
-				`export MAILGUN_KEY=key-0987654321fedcba0987654321fedcba`,
+				`MAILGUN_API_KEY=key-9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d`,
+				`mailgun_key: "key-1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d"`,
+				`export MAILGUN_KEY=key-0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a`,
 			},
 			tns: []string{
 				`MAILGUN_API_KEY=key-your_api_key_here_xxxxxxxxx`,

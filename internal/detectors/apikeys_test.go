@@ -15,23 +15,24 @@ func TestAPIKeysDetectors(t *testing.T) {
 			name:     "OpenAI",
 			detector: NewOpenAIKeyDetector(),
 			tps: []string{
-				`OPENAI_API_KEY=sk-abc123def456ghi789jT3BlbkFJabc123def456ghi789j`,
-				`sk-proj-abc123def456ghi789jabc123def456ghi789j`,
-				`key: sk-abc123def456ghi789jabc123def456ghi789jabc123def`,
+				// These match the sk-...T3BlbkFJ... pattern but are revoked/invalid values.
+				`OPENAI_API_KEY=sk-Vb9Xr2Lm7nQp4KwJ01T3BlbkFJHs8Yd3Rc6Fg5Mn2Kp9x`,
+				`sk-proj-Wb4Xm7Lp2Rn9Ks6Jd3Hf8Yc1Qv5Gt0Zr7Nm4Bp6Wj`,
+				`key: sk-Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv4Gs0Tc5Rn7Jp3Wm6Xd9Lb2Kf8Hv`,
 			},
 			tns: []string{
 				`OPENAI_API_KEY="your_api_key_here"`,
 				`sk-placeholder-do-not-use-this-key`,
-				`sk-xxxT3BlbkFJxxx`, // length/entropy too low but format matches? (might not match regex anyway, but if it does, confidence should be low)
+				`sk-xxxT3BlbkFJxxx`,
 			},
 		},
 		{
 			name:     "Slack",
 			detector: NewSlackTokenDetector(),
 			tps: []string{
-				`SLACK_TOKEN=xoxb-1234567890-1234567890-AbCdEfGhIjKl`,
-				`slack_api_token: "xoxp-1234567890-1234567890-1234567890-AbCdEfGhIjKl"`,
-				`https://hooks.slack.com/services/T12345678/B12345678/AbCdEfGhIjKlMnOpQrStUvWx`,
+				`SLACK_TOKEN=xoxb-9876543210-9876543210-Vb3Xr7Lm2Kp`,
+				`slack_api_token: "xoxp-9876543210-9876543210-9876543210-Wb4Nm8Jp3Rc"`,
+				`https://hooks.slack.com/services/TVB3XR7LM/BNM2KP8JD/Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv`,
 			},
 			tns: []string{
 				`SLACK_TOKEN=xoxb-your-token-here`,
@@ -43,9 +44,9 @@ func TestAPIKeysDetectors(t *testing.T) {
 			name:     "Stripe",
 			detector: NewStripeKeyDetector(),
 			tps: []string{
-				`STRIPE_KEY="sk_live_4eC39HqLyjWDarjtT1zdp7dc"`,
-				`stripe_secret: pk_test_TYooMQauvdEDq54NiTphI7jx`,
-				`rk_live_1234567890abcdefGHIJKLMN`,
+				`STRIPE_KEY="sk_live_Vb9Xr2Lm7nQp4KwJ01Hs8Yd3"`,
+				`stripe_secret: pk_live_Wb4Nm8Jp3Rc6Fg5Mn2Kp9Lm7`,
+				`rk_live_Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv4Gs`,
 			},
 			tns: []string{
 				`STRIPE_KEY="sk_test_example_key_do_not_use"`,

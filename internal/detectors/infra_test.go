@@ -15,9 +15,9 @@ func TestInfraDetectors(t *testing.T) {
 			name:     "NPMToken",
 			detector: NewNPMTokenDetector(),
 			tps: []string{
-				`NPM_TOKEN=npm_Abc123Def456Ghi789Jkl012Mno345Pqrs`,
-				`//registry.npmjs.org/:_authToken=npm_abcdefghijklmnopqrstuvwxyz0123456789`,
-				`token="npm_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"`,
+				`NPM_TOKEN=npm_Abc123Def456Ghi789Jkl012Mno345Pqrstu`,
+				`//registry.npmjs.org/:_authToken=npm_Vb9Xr2Lm7nQp4KwJ01Hs8Yd3Rc6Fg5Mn2Kp9`,
+				`token="npm_Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv4Gs0Tc5Rn7Jp3W"`,
 			},
 			tns: []string{
 				`NPM_TOKEN=npm_your_token_here_xxxxxxxxxxxx`,
@@ -29,9 +29,9 @@ func TestInfraDetectors(t *testing.T) {
 			name:     "PyPIToken",
 			detector: NewPyPITokenDetector(),
 			tps: []string{
-				`PYPI_TOKEN=pypi-abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ`,
-				`password = pypi-1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`,
-				`export TWINE_PASSWORD=pypi-AbCdEfGhIjKlMnOpQrStUvWxYz0123456789AbCdEfGhIjKlMnOpQrStUvWxYz`,
+				`PYPI_TOKEN=pypi-Vb9Xr2Lm7nQp4KwJ01Hs8Yd3Rc6Fg5Mn2Kp9Lm7nQp4KwJ01Hs8Yd3Rc`,
+				`password = pypi-Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv4Gs0Tc5Rn7Jp3Wm6Xd9Lb2Kf8Hv4Gs0Tc5Rn7`,
+				`export TWINE_PASSWORD=pypi-Wb4Nm8Jp3Rc6Fg5Mn2Kp9Lm7nQp4KwJ01Hs8Yd3Rc6Fg5Mn2Kp9Lm7n`,
 			},
 			tns: []string{
 				`PYPI_TOKEN=pypi-your_token_here_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`,
@@ -43,9 +43,10 @@ func TestInfraDetectors(t *testing.T) {
 			name:     "DockerHubToken",
 			detector: NewDockerHubTokenDetector(),
 			tps: []string{
-				`DOCKER_TOKEN=dckr_pat_abcdefghijklmnopqrstuvwxyz0`,
-				`password: "dckr_pat_ABCDEFGHIJKLMNOPQRSTUVWXYZ1"`,
-				`export DOCKER_PASSWORD=dckr_pat_0123456789abcdefghijklmnop`,
+				// 27 chars after dckr_pat_ prefix.
+				`DOCKER_TOKEN=dckr_pat_Vb9Xr2Lm7nQp4KwJ01Hs8Yd3Rc6`,
+				`password: "dckr_pat_Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv4Gs0"`,
+				`export DOCKER_PASSWORD=dckr_pat_Wb4Nm8Jp3Rc6Fg5Mn2Kp9Lm7nQp`,
 			},
 			tns: []string{
 				`DOCKER_TOKEN=dckr_pat_your_token_here_xxxxxxxxx`,
@@ -57,9 +58,9 @@ func TestInfraDetectors(t *testing.T) {
 			name:     "CloudflareToken",
 			detector: NewCloudflareTokenDetector(),
 			tps: []string{
-				`CLOUDFLARE_API_TOKEN=abcdefghijklmnopqrstuvwxyz0123456789ABCD`,
-				`cloudflare_key: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcd"`,
-				`export CF_API_TOKEN=0123456789abcdefghijklmnopqrstuvwxyzABCD`,
+				`CLOUDFLARE_API_TOKEN=Vb9Xr2Lm7nQp4KwJ01Hs8Yd3Rc6Fg5Mn2Kp9Lm7n`,
+				`cloudflare_key: "Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv4Gs0Tc5Rn7Jp3Wm6Xd"`,
+				`export CF_API_TOKEN=Wb4Nm8Jp3Rc6Fg5Mn2Kp9Lm7nQp4KwJ01Hs8Yd3Rc`,
 			},
 			tns: []string{
 				`CLOUDFLARE_API_TOKEN=your_token_here_xxxxxxxxxxxxxxxxxxxx`,
@@ -71,9 +72,9 @@ func TestInfraDetectors(t *testing.T) {
 			name:     "VaultToken",
 			detector: NewVaultTokenDetector(),
 			tps: []string{
-				`VAULT_TOKEN=s.abcdefghijklmnopqrstuvwx`,
-				`vault_token: "s.ABCDEFGHIJKLMNOPQRSTUVWX"`,
-				`export VAULT_TOKEN=s.0123456789abcdefghijklmn`,
+				`VAULT_TOKEN=s.Vb9Xr2Lm7nQp4KwJ01Hs8Yd3R`,
+				`vault_token: "s.Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv4G"`,
+				`export VAULT_TOKEN=s.Wb4Nm8Jp3Rc6Fg5Mn2Kp9Lm7nQ`,
 			},
 			tns: []string{
 				`VAULT_TOKEN=s.your_token_here_xxxxxx`,

@@ -99,6 +99,7 @@ func main() {
 					detectorStats[f.Detector] = s
 				}
 				s.fp++
+				fmt.Printf("FP: %s triggered on '%s' with confidence %d\n", f.Detector, tc.Input, f.Confidence)
 			}
 		}
 	}

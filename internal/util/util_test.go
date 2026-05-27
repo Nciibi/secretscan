@@ -15,7 +15,7 @@ func TestIsBinaryExtension(t *testing.T) {
 		{"app.exe", true},
 		{"main.go", false},
 		{"config.yaml", false},
-		{"archive.tar.gz", false}, // only checks last ext
+		{"archive.tar.gz", true}, // only checks last ext, .gz is binary
 		{"data.zip", true},
 	}
 

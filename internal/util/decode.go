@@ -1,7 +1,7 @@
 // Package decode provides a pre-scan decode pass to detect obfuscated secrets.
 // Before running detectors on a line, this attempts to decode base64, hex,
 // and URL-encoded content and returns additional decoded strings to scan.
-package decode
+package util
 
 import (
 	"encoding/base64"

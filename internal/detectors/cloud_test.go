@@ -17,7 +17,7 @@ func TestCloudDetectors(t *testing.T) {
 			tps: []string{
 				`sig=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu`,
 				`BlobEndpoint=https://account.blob.core.windows.net/;SharedAccessSignature=sv=2020-02-10&ss=b&srt=co&sp=rwdlac&se=2021-01-31T20:25:22Z&st=2021-01-31T12:25:22Z&spr=https&sig=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu`,
-				`url="https://example.com/blob?sig=1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHI"`,
+				`url="https://azure-blob-test-domain.net/blob?sig=1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHI"`,
 			},
 			tns: []string{
 				`sig=placeholder_signature_do_not_use`,

@@ -9,10 +9,10 @@ func TestAWSKeyDetector(t *testing.T) {
 
 	t.Run("True Positives", func(t *testing.T) {
 		tests := []string{
-			`AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE`,
-			`aws_access_key_id = "AKIAI44QH8DHBEXAMPLE"`,
-			`export AWS_KEY=AKIAZ7PRVBN3WEXAMPLE`,
-			`aws_secret_access_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"`,
+			`AWS_ACCESS_KEY_ID=AKIAIOSFODNN7ABRACAD`,
+			`aws_access_key_id = "AKIAI44QH8DHBABRACAD"`,
+			`export AWS_KEY=AKIAZ7PRVBN3WABRACAD`,
+			`aws_secret_access_key = "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"`,
 		}
 
 		for _, tc := range tests {

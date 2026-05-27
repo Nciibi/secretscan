@@ -26,7 +26,7 @@ var contextKeywords = []string{
 	"key", "secret", "token", "password", "passwd", "pwd", "api_key",
 	"apikey", "api-key", "access_key", "secret_key", "private_key",
 	"auth", "credential", "bearer", "authorization", "connection_string",
-	"database_url", "db_password", "encryption_key", "signing_key",
+	"database_url", "db_password", "encryption_key", "signing_key", "aws_key", "aws_access_key_id", "twilio",
 }
 
 // hasContextKeyword checks if any context keyword appears near the match.
@@ -49,6 +49,7 @@ func isFalsePositive(line string) bool {
 		"example", "sample", "placeholder", "your_", "xxx", "todo",
 		"fixme", "replace_me", "changeme", "insert_", "dummy",
 		"<your", "{your", "${", "{{", "test_key", "fake",
+		"sha256-", "sha512-", `"integrity":`,
 	}
 	for _, fp := range falsePatterns {
 		if strings.Contains(lower, fp) {
@@ -100,14 +101,20 @@ func (d *BaseDetector) baseDetect(line string, lineNum int, filePath string) []m
 		return nil
 	}
 
-	matches := d.pattern.FindAllStringIndex(line, -1)
+	matches := d.pattern.FindAllStringSubmatchIndex(line, -1)
 	if len(matches) == 0 {
 		return nil
 	}
 
 	var findings []models.Finding
 	for _, loc := range matches {
-		matched := line[loc[0]:loc[1]]
+		var start, end int
+		if len(loc) >= 4 && loc[2] != -1 && loc[3] != -1 {
+			start, end = loc[2], loc[3]
+		} else {
+			start, end = loc[0], loc[1]
+		}
+		matched := line[start:end]
 		entropyScore := entropy.Score(matched)
 		hasCtx, ctxKeyword := hasContextKeyword(line)
 
@@ -125,8 +132,8 @@ func (d *BaseDetector) baseDetect(line string, lineNum int, filePath string) []m
 			Confidence:   confidence,
 			File:         filePath,
 			Line:         lineNum,
-			Column:       loc[0] + 1,
-			Preview:      truncateContext(line, loc[0], loc[1]),
+			Column:       start + 1,
+			Preview:      truncateContext(line, start, end),
 			Reason:       reason,
 			Detector:     d.name,
 			Source:       models.SourceFilesystem,

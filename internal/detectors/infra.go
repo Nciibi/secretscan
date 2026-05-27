@@ -88,7 +88,7 @@ func NewCloudflareTokenDetector() *CloudflareTokenDetector {
 			name:     "cloudflare-token",
 			typeName: "Cloudflare API Token",
 			severity: models.SeverityHigh,
-			pattern:  regexp.MustCompile(`(?i)(?:cloudflare[_-]?(?:api[_-]?)?(?:token|key))\s*[=:]\s*['"]?([A-Za-z0-9_-]{40})['"]?`),
+			pattern:  regexp.MustCompile(`(?i)(?:cloudflare|cf)[_-]?(?:api[_-]?)?(?:token|key)\s*[=:]\s*['"]?([A-Za-z0-9_-]{40})['"]?`),
 			keywords: []string{"cloudflare", "CF_API", "CLOUDFLARE"},
 		},
 	}

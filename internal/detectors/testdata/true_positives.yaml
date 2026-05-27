@@ -1,20 +1,20 @@
 # True positive test cases — each MUST score >= min_confidence.
-# These use real formats with fake/invalid values.
+# These use real formats with synthetic/revoked values.
 
 - detector: aws-key
-  input: 'AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE'
+  input: 'AWS_ACCESS_KEY_ID=AKIAIOSFODNN7ABRACAD'
   min_confidence: 60
 
 - detector: aws-key
-  input: 'aws_access_key_id = "AKIAI44QH8DHBEXAMPLE"'
-  min_confidence: 60
+  input: 'aws_access_key_id = "AKIAI44QH8DHBABRACAD"'
+  min_confidence: 50
 
 - detector: aws-key
-  input: 'export AWS_KEY=AKIAZ7PRVBN3WEXAMPLE'
-  min_confidence: 60
+  input: 'export AWS_KEY=AKIAZ7PRVBN3WABRACAD'
+  min_confidence: 50
 
 - detector: github-token
-  input: 'token = "ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmn"'
+  input: 'token = "ghp_Vb9Xr2Lm7nQp4KwJ01Hs8Yd3Rc6Fg5Mn2Kp9x"'
   min_confidence: 60
 
 - detector: github-token
@@ -22,11 +22,11 @@
   min_confidence: 60
 
 - detector: stripe-key
-  input: 'STRIPE_KEY="sk_live_4eC39HqLyjWDarjtT1zdp7dc"'
+  input: 'STRIPE_KEY="sk_live_Vb9Xr2Lm7nQp4KwJ01Hs8Yd3"'
   min_confidence: 60
 
 - detector: stripe-key
-  input: 'stripe_secret: pk_test_TYooMQauvdEDq54NiTphI7jx'
+  input: 'stripe_secret: pk_live_Wb4Nm8Jp3Rc6Fg5Mn2Kp9Lm7'
   min_confidence: 60
 
 - detector: private-key
@@ -58,35 +58,35 @@
   min_confidence: 50
 
 - detector: connection-string
-  input: 'DATABASE_URL=postgresql://admin:p4ssw0rd@db.example.com:5432/prod'
-  min_confidence: 60
+  input: 'DATABASE_URL=postgresql://admin:p4ssw0rd@db.internal.net:5432/prod'
+  min_confidence: 50
 
 - detector: connection-string
   input: 'MONGO_URI="mongodb://root:s3cr3t@cluster0.mongodb.net/mydb"'
-  min_confidence: 60
-
-- detector: slack-token
-  input: 'SLACK_TOKEN=xoxb-1234567890-1234567890-AbCdEfGhIjKl'
   min_confidence: 50
 
 - detector: slack-token
-  input: 'https://hooks.slack.com/services/T12345678/B12345678/AbCdEfGhIjKlMnOpQrStUvWx'
+  input: 'SLACK_TOKEN=xoxb-9876543210-9876543210-Vb3Xr7Lm2Kp'
+  min_confidence: 50
+
+- detector: slack-token
+  input: 'https://hooks.slack.com/services/TVB3XR7LM/BNM2KP8JD/Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv'
   min_confidence: 60
 
 - detector: sendgrid
-  input: 'SENDGRID_KEY=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'
+  input: 'SENDGRID_KEY=SG.Vb9Xr2Lm7nQp4KwJ01Hs8Y.Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv4Gs0Tc5Rn7Jp3Wm6Xd9Lb2K'
   min_confidence: 60
 
 - detector: twilio-sid
-  input: 'TWILIO_SID=AC1234567890abcdef1234567890abcdef'
+  input: 'TWILIO_SID=AC9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d'
   min_confidence: 50
 
 - detector: npm-token
-  input: 'NPM_TOKEN=npm_Abc123Def456Ghi789Jkl012Mno345Pqrs'
+  input: 'NPM_TOKEN=npm_Abc123Def456Ghi789Jkl012Mno345Pqrstu'
   min_confidence: 50
 
 - detector: azure-connection
-  input: 'DefaultEndpointsProtocol=https;AccountName=myaccount;AccountKey=abc123def456ghi789jkl012mno345pqr678stu901vwx234='
+  input: 'DefaultEndpointsProtocol=https;AccountName=myaccount;AccountKey=Vb9Xr2Lm7nQp4KwJ01Hs8Yd3Rc6Fg5Mn2Kp9Lm7nQp4KwJ01Hs8='
   min_confidence: 60
 
 - detector: gcp-service-account

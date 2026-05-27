@@ -19,7 +19,7 @@ func setupTestDir(t *testing.T) string {
 	secretFile := filepath.Join(dir, "config.env")
 	os.WriteFile(secretFile, []byte(`# Config
 DB_HOST=localhost
-AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+AWS_ACCESS_KEY_ID=AKIAIOSFODNN7ABRACAD
 DB_PORT=5432
 `), 0644)
 
