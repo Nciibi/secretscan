@@ -1,0 +1,94 @@
+# True positive test cases — each MUST score >= min_confidence.
+# These use real formats with fake/invalid values.
+
+- detector: aws-key
+  input: 'AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE'
+  min_confidence: 60
+
+- detector: aws-key
+  input: 'aws_access_key_id = "AKIAI44QH8DHBEXAMPLE"'
+  min_confidence: 60
+
+- detector: aws-key
+  input: 'export AWS_KEY=AKIAZ7PRVBN3WEXAMPLE'
+  min_confidence: 60
+
+- detector: github-token
+  input: 'token = "ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmn"'
+  min_confidence: 60
+
+- detector: github-token
+  input: 'GITHUB_TOKEN=ghp_R4nd0mT0k3nV4lu3W1thM0r3Ch4r4ct3rsHere'
+  min_confidence: 60
+
+- detector: stripe-key
+  input: 'STRIPE_KEY="sk_live_4eC39HqLyjWDarjtT1zdp7dc"'
+  min_confidence: 60
+
+- detector: stripe-key
+  input: 'stripe_secret: pk_test_TYooMQauvdEDq54NiTphI7jx'
+  min_confidence: 60
+
+- detector: private-key
+  input: '-----BEGIN RSA PRIVATE KEY-----'
+  min_confidence: 60
+
+- detector: private-key
+  input: '-----BEGIN EC PRIVATE KEY-----'
+  min_confidence: 60
+
+- detector: private-key
+  input: '-----BEGIN PRIVATE KEY-----'
+  min_confidence: 60
+
+- detector: jwt
+  input: 'token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"'
+  min_confidence: 60
+
+- detector: jwt
+  input: 'jwt_secret: "mY5up3rS3cr3tK3yF0rS1gn1ng"'
+  min_confidence: 50
+
+- detector: password
+  input: 'password = "Tr0ub4dor&3xAmpl3"'
+  min_confidence: 50
+
+- detector: password
+  input: 'DB_PASSWORD="S3cur3P@ssw0rd!2024"'
+  min_confidence: 50
+
+- detector: connection-string
+  input: 'DATABASE_URL=postgresql://admin:p4ssw0rd@db.example.com:5432/prod'
+  min_confidence: 60
+
+- detector: connection-string
+  input: 'MONGO_URI="mongodb://root:s3cr3t@cluster0.mongodb.net/mydb"'
+  min_confidence: 60
+
+- detector: slack-token
+  input: 'SLACK_TOKEN=xoxb-1234567890-1234567890-AbCdEfGhIjKl'
+  min_confidence: 50
+
+- detector: slack-token
+  input: 'https://hooks.slack.com/services/T12345678/B12345678/AbCdEfGhIjKlMnOpQrStUvWx'
+  min_confidence: 60
+
+- detector: sendgrid
+  input: 'SENDGRID_KEY=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'
+  min_confidence: 60
+
+- detector: twilio-sid
+  input: 'TWILIO_SID=AC1234567890abcdef1234567890abcdef'
+  min_confidence: 50
+
+- detector: npm-token
+  input: 'NPM_TOKEN=npm_Abc123Def456Ghi789Jkl012Mno345Pqrs'
+  min_confidence: 50
+
+- detector: azure-connection
+  input: 'DefaultEndpointsProtocol=https;AccountName=myaccount;AccountKey=abc123def456ghi789jkl012mno345pqr678stu901vwx234='
+  min_confidence: 60
+
+- detector: gcp-service-account
+  input: '"type": "service_account"'
+  min_confidence: 50

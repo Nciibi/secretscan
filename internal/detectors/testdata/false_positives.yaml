@@ -1,0 +1,81 @@
+# False positive test cases — each MUST score < 25 (ideally 0).
+# These should NOT trigger any detector.
+
+# Placeholder values
+- input: 'API_KEY="your_api_key_here"'
+  max_confidence: 24
+
+- input: 'token = "EXAMPLE_TOKEN"'
+  max_confidence: 24
+
+- input: 'SECRET = "placeholder"'
+  max_confidence: 24
+
+- input: 'password = "changeme"'
+  max_confidence: 24
+
+- input: 'AWS_KEY=AKIA_EXAMPLE_PLACEHOLDER'
+  max_confidence: 24
+
+- input: 'api_key = "insert_your_key_here"'
+  max_confidence: 24
+
+- input: 'token = "fake_token_for_testing"'
+  max_confidence: 24
+
+- input: 'secret = "replace_me_with_real_value"'
+  max_confidence: 24
+
+- input: 'password = "your_password_here"'
+  max_confidence: 24
+
+# Documentation examples
+- input: 'export GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+  max_confidence: 24
+
+- input: '# Set your API key: export API_KEY="<your key>"'
+  max_confidence: 24
+
+- input: 'STRIPE_KEY="sk_test_example_key_do_not_use"'
+  max_confidence: 24
+
+# Random English words with secret-like length
+- input: 'key = "the_quick_brown_fox_jumps"'
+  max_confidence: 24
+
+- input: 'token = "sample_development_value"'
+  max_confidence: 24
+
+- input: 'secret = "dummy_testing_credential"'
+  max_confidence: 24
+
+# Lock file hashes (should never trigger)
+- input: '"integrity": "sha512-abc123def456ghi789jkl012mno345pqr678stu901vwx234yz567"'
+  max_confidence: 24
+
+- input: '"resolved": "https://registry.npmjs.org/express/-/express-4.18.2.tgz"'
+  max_confidence: 24
+
+# Template/interpolation patterns
+- input: 'token = "${SECRET_TOKEN}"'
+  max_confidence: 24
+
+- input: 'key = "{{.Values.apiKey}}"'
+  max_confidence: 24
+
+- input: 'password = "${DB_PASSWORD}"'
+  max_confidence: 24
+
+# Comments and documentation
+- input: '// TODO: replace with real API key'
+  max_confidence: 24
+
+- input: '# FIXME: hardcoded test credentials'
+  max_confidence: 24
+
+# Low entropy repetitive strings
+- input: 'key = "aaaaaaaaaaaaaaaaaaaaaa"'
+  max_confidence: 24
+
+- input: 'token = "abcabcabcabcabcabcabcabc"'
+  max_confidence: 24
