@@ -9,9 +9,9 @@ import (
 // SARIF output structures conforming to SARIF v2.1.0 schema.
 
 type sarifLog struct {
-	Schema  string      `json:"$schema"`
-	Version string      `json:"version"`
-	Runs    []sarifRun  `json:"runs"`
+	Schema  string     `json:"$schema"`
+	Version string     `json:"version"`
+	Runs    []sarifRun `json:"runs"`
 }
 
 type sarifRun struct {
@@ -41,10 +41,10 @@ type sarifRuleConfig struct {
 }
 
 type sarifResult struct {
-	RuleID    string           `json:"ruleId"`
-	Level     string           `json:"level"`
-	Message   sarifMessage     `json:"message"`
-	Locations []sarifLocation  `json:"locations"`
+	RuleID     string          `json:"ruleId"`
+	Level      string          `json:"level"`
+	Message    sarifMessage    `json:"message"`
+	Locations  []sarifLocation `json:"locations"`
 	Properties map[string]any  `json:"properties,omitempty"`
 }
 
@@ -71,7 +71,6 @@ type sarifRegion struct {
 }
 
 func (rw *Writer) writeSARIF(result models.ScanResult) error {
-	// Build rules from unique detectors.
 	ruleMap := make(map[string]bool)
 	var rules []sarifRule
 	for _, f := range result.Findings {
@@ -92,6 +91,18 @@ func (rw *Writer) writeSARIF(result models.ScanResult) error {
 
 	var results []sarifResult
 	for _, f := range result.Findings {
+		props := map[string]any{
+			"confidence": f.Confidence,
+			"source":     f.Source,
+			"preview":    f.Preview,
+		}
+		if f.Validation != "" {
+			props["validation"] = f.Validation
+		}
+		if f.EncodingType != "" {
+			props["encoding"] = f.EncodingType
+		}
+
 		results = append(results, sarifResult{
 			RuleID:  f.Detector,
 			Level:   severityToSARIFLevel(f.Severity),
@@ -105,11 +116,7 @@ func (rw *Writer) writeSARIF(result models.ScanResult) error {
 					},
 				},
 			}},
-			Properties: map[string]any{
-				"confidence": f.Confidence,
-				"source":     f.Source,
-				"preview":    f.Preview,
-			},
+			Properties: props,
 		})
 	}
 
@@ -120,7 +127,7 @@ func (rw *Writer) writeSARIF(result models.ScanResult) error {
 			Tool: sarifTool{
 				Driver: sarifDriver{
 					Name:    "secretscan",
-					Version: "1.0.0",
+					Version: "2.0.0",
 					Rules:   rules,
 				},
 			},

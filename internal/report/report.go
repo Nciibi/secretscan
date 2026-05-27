@@ -16,8 +16,8 @@ import (
 type Format string
 
 const (
-	FormatText Format = "text"
-	FormatJSON Format = "json"
+	FormatText  Format = "text"
+	FormatJSON  Format = "json"
 	FormatSARIF Format = "sarif"
 )
 
@@ -41,7 +41,6 @@ func NewWriter(w io.Writer, format string) *Writer {
 
 // Write outputs the scan result in the configured format.
 func (rw *Writer) Write(result models.ScanResult) error {
-	// Sort by severity (critical first), then by file and line.
 	sort.Slice(result.Findings, func(i, j int) bool {
 		si := result.Findings[i].Severity.Weight()
 		sj := result.Findings[j].Severity.Weight()
@@ -81,6 +80,10 @@ func (rw *Writer) writeText(result models.ScanResult) error {
 	}
 	fmt.Fprintln(rw.w)
 	fmt.Fprintln(rw.w, strings.Repeat("─", 70))
+
+	if result.Suppressed > 0 {
+		dim.Fprintf(rw.w, "ℹ️  %d findings suppressed by baseline (run with --no-baseline to see all)\n", result.Suppressed)
+	}
 
 	if !result.HasFindings() {
 		green.Fprintf(rw.w, "\n✅ No secrets found!\n\n")
@@ -122,13 +125,33 @@ func (rw *Writer) writeText(result models.ScanResult) error {
 
 		bold.Fprintf(rw.w, "[%d] ", i+1)
 		severityColor.Fprintf(rw.w, "%s %s ", icon, strings.ToUpper(string(f.Severity)))
-		bold.Fprintf(rw.w, "| %s\n", f.Type)
+		bold.Fprintf(rw.w, "| %s", f.Type)
+
+		// Validation status indicator.
+		switch f.Validation {
+		case models.ValidationActive:
+			color.New(color.FgGreen, color.Bold).Fprintf(rw.w, " 🟢 ACTIVE")
+		case models.ValidationInactive:
+			color.New(color.FgRed).Fprintf(rw.w, " 🔴 inactive")
+		case models.ValidationError:
+			dim.Fprintf(rw.w, " ⚠️ validation error")
+		case models.ValidationUnknown:
+			if f.Validation != "" {
+				dim.Fprintf(rw.w, " ⚪ unvalidated")
+			}
+		}
+		fmt.Fprintln(rw.w)
 
 		cyan.Fprintf(rw.w, "    📁 %s:%d:%d\n", f.File, f.Line, f.Column)
 		fmt.Fprintf(rw.w, "    🔎 Detector: %s | Confidence: %d%% | Source: %s\n",
 			f.Detector, f.Confidence, f.Source)
 		dim.Fprintf(rw.w, "    📝 %s\n", f.Reason)
-		fmt.Fprintf(rw.w, "    💬 %s\n", f.Preview)
+
+		preview := f.Preview
+		if f.EncodingType != "" {
+			preview += fmt.Sprintf(" (detected via %s decode)", f.EncodingType)
+		}
+		fmt.Fprintf(rw.w, "    💬 %s\n", preview)
 
 		if f.CommitHash != "" {
 			dim.Fprintf(rw.w, "    📌 Commit: %s — %s\n", f.CommitHash, f.CommitMessage)

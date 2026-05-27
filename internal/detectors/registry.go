@@ -11,6 +11,7 @@ type Registry struct {
 func NewRegistry(entropyThreshold float64) *Registry {
 	r := &Registry{}
 	r.detectors = []Detector{
+		// Original detectors.
 		NewAWSKeyDetector(),
 		NewGitHubTokenDetector(),
 		NewOpenAIKeyDetector(),
@@ -22,6 +23,25 @@ func NewRegistry(entropyThreshold float64) *Registry {
 		NewGenericPasswordDetector(),
 		NewConnectionStringDetector(),
 		NewGenericHighEntropyDetector(entropyThreshold),
+
+		// Cloud detectors (Task 5).
+		NewAzureSASDetector(),
+		NewAzureConnectionStringDetector(),
+		NewGCPServiceAccountDetector(),
+		NewGCPAPIKeyDetector(),
+
+		// Communications detectors (Task 5).
+		NewTwilioSIDDetector(),
+		NewTwilioAuthTokenDetector(),
+		NewSendGridDetector(),
+		NewMailgunDetector(),
+
+		// Infrastructure detectors (Task 5).
+		NewNPMTokenDetector(),
+		NewPyPITokenDetector(),
+		NewDockerHubTokenDetector(),
+		NewCloudflareTokenDetector(),
+		NewVaultTokenDetector(),
 	}
 	return r
 }

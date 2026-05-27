@@ -17,6 +17,7 @@ import (
 	"github.com/secretscan/secretscan/internal/scanner"
 	"github.com/secretscan/secretscan/internal/scanner/files"
 	gitscanner "github.com/secretscan/secretscan/internal/scanner/git"
+	"github.com/secretscan/secretscan/internal/validate"
 )
 
 var gitCmd = &cobra.Command{
@@ -27,9 +28,10 @@ were committed in the past, even if they have been removed.
 
 This scans diffs between commits and detects secrets in added lines.
 
-Example:
+Examples:
   secretscan git .
-  secretscan git ./my-repo --output json`,
+  secretscan git ./my-repo --output json
+  secretscan git . --validate`,
 	Args: cobra.ExactArgs(1),
 	RunE: runGit,
 }
@@ -97,16 +99,22 @@ func runGit(cmd *cobra.Command, args []string) error {
 		}
 
 		fs := files.New(cfg, registry, matcher)
-		fsFindings, files, err := fs.Scan(ctx, scanPath)
+		fsFindings, fileCount, err := fs.Scan(ctx, scanPath)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "filesystem scan error: %v\n", err)
 		} else {
 			allFindings = append(allFindings, fsFindings...)
-			scannedFiles = files
+			scannedFiles = fileCount
 		}
 	}
 
 	allFindings = scanner.Dedup(allFindings)
+
+	// Validation.
+	if flagValidate {
+		v := validate.New()
+		v.ValidateFindings(allFindings)
+	}
 
 	scanMode := "git-history"
 	if flagIncludeFS {

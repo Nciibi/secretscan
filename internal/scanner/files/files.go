@@ -49,10 +49,40 @@ func (s *Scanner) Scan(ctx context.Context, root string) ([]models.Finding, int,
 	}
 
 	// Collect files to scan.
+	filePaths := s.collectFiles(ctx, root)
+	return s.scanPaths(ctx, root, filePaths)
+}
+
+// ScanFiles scans only the specified files (for incremental --since scanning).
+func (s *Scanner) ScanFiles(ctx context.Context, root string, relPaths []string) ([]models.Finding, int, error) {
+	root, err := filepath.Abs(root)
+	if err != nil {
+		return nil, 0, fmt.Errorf("invalid path: %w", err)
+	}
+
 	var filePaths []string
-	err = filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+	for _, rel := range relPaths {
+		abs := filepath.Join(root, rel)
+		info, err := os.Stat(abs)
+		if err != nil || info.IsDir() {
+			continue
+		}
+		if s.matcher.ShouldIgnore(rel) || util.IsBinaryExtension(abs) {
+			continue
+		}
+		if s.cfg.MaxFileSize > 0 && info.Size() > s.cfg.MaxFileSize {
+			continue
+		}
+		filePaths = append(filePaths, abs)
+	}
+	return s.scanPaths(ctx, root, filePaths)
+}
+
+func (s *Scanner) collectFiles(ctx context.Context, root string) []string {
+	var filePaths []string
+	filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
-			return nil // skip unreadable entries
+			return nil
 		}
 
 		select {
@@ -73,7 +103,6 @@ func (s *Scanner) Scan(ctx context.Context, root string) ([]models.Finding, int,
 			return nil
 		}
 
-		// Skip symlinks.
 		if d.Type()&os.ModeSymlink != 0 {
 			return nil
 		}
@@ -82,19 +111,16 @@ func (s *Scanner) Scan(ctx context.Context, root string) ([]models.Finding, int,
 			return nil
 		}
 
-		// Skip binary files by extension.
 		if util.IsBinaryExtension(path) {
 			return nil
 		}
 
-		// Check file size.
 		if info, err := d.Info(); err == nil {
 			if s.cfg.MaxFileSize > 0 && info.Size() > s.cfg.MaxFileSize {
 				return nil
 			}
 		}
 
-		// Check included extensions if specified.
 		if len(s.cfg.IncludeExts) > 0 {
 			ext := filepath.Ext(path)
 			found := false
@@ -112,11 +138,10 @@ func (s *Scanner) Scan(ctx context.Context, root string) ([]models.Finding, int,
 		filePaths = append(filePaths, path)
 		return nil
 	})
-	if err != nil {
-		return nil, 0, err
-	}
+	return filePaths
+}
 
-	// Scan files using worker pool.
+func (s *Scanner) scanPaths(ctx context.Context, root string, filePaths []string) ([]models.Finding, int, error) {
 	workers := s.cfg.MaxWorkers
 	if workers <= 0 {
 		workers = 8
@@ -158,7 +183,6 @@ func (s *Scanner) Scan(ctx context.Context, root string) ([]models.Finding, int,
 }
 
 func (s *Scanner) scanFile(path, root string) []models.Finding {
-	// Double check for binary content.
 	isBin, err := util.IsBinaryContent(path)
 	if err != nil || isBin {
 		return nil
@@ -174,12 +198,15 @@ func (s *Scanner) scanFile(path, root string) []models.Finding {
 		}
 
 		results := s.registry.DetectAll(line, lineNum, relPath)
+		// Store line content for baseline fingerprinting.
+		for i := range results {
+			results[i].LineContent = line
+		}
 		findings = append(findings, results...)
 		return nil
 	})
 
 	if err != nil {
-		// Log but don't fail the scan for individual file errors.
 		if s.verbose {
 			fmt.Fprintf(os.Stderr, "warning: error reading %s: %v\n", relPath, err)
 		}

@@ -8,13 +8,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const version = "1.0.0"
+const version = "2.0.0"
 
 // Exit codes.
 const (
-	ExitClean   = 0
+	ExitClean    = 0
 	ExitFindings = 1
-	ExitError   = 2
+	ExitError    = 2
 )
 
 // Execute runs the root command.
@@ -32,6 +32,8 @@ var (
 	flagVerbose   bool
 	flagMaxSize   int64
 	flagEntropy   float64
+	flagValidate  bool
+	flagNoDecode  bool
 )
 
 var rootCmd = &cobra.Command{
@@ -62,6 +64,10 @@ func init() {
 		"maximum file size in bytes (default: 10MB)")
 	rootCmd.PersistentFlags().Float64Var(&flagEntropy, "entropy", 0,
 		"entropy threshold (default: 4.0)")
+	rootCmd.PersistentFlags().BoolVarP(&flagValidate, "validate", "V", false,
+		"probe detected secrets to check if they are still active")
+	rootCmd.PersistentFlags().BoolVar(&flagNoDecode, "no-decode", false,
+		"disable base64/hex/URL decode pre-scan pass")
 
 	rootCmd.AddCommand(scanCmd)
 	rootCmd.AddCommand(gitCmd)
