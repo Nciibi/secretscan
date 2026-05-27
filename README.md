@@ -462,5 +462,5 @@ MIT License — see [LICENSE](LICENSE) for details.
 ---
 
 <p align="center">
-  <strong>Made with ❤️ for developer security</strong>
+  <strong>Made with ❤️ for developer security , stay safe guys !</strong>
 </p>
