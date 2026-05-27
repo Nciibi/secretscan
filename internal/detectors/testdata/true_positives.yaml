@@ -2,15 +2,15 @@
 # These use real formats with synthetic/revoked values.
 
 - detector: aws-key
-  input: 'AWS_ACCESS_KEY_ID=AKIAIOSFODNN7ABRACAD'
+  input: 'AWS_ACCESS_KEY_ID=AKIAIOSFODNN7Q9R7F2L'
   min_confidence: 60
 
 - detector: aws-key
-  input: 'aws_access_key_id = "AKIAI44QH8DHBABRACAD"'
+  input: 'aws_access_key_id = "AKIAI44QH8DHBQ9R7F2L"'
   min_confidence: 50
 
 - detector: aws-key
-  input: 'export AWS_KEY=AKIAZ7PRVBN3WABRACAD'
+  input: 'export AWS_KEY=AKIAZ7PRVBN3WQ9R7F2L'
   min_confidence: 50
 
 - detector: github-token
@@ -70,7 +70,7 @@
   min_confidence: 50
 
 - detector: slack-token
-  input: 'https://hooks.slack.com/services/TVB3XR7LM/BNM2KP8JD/Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv'
+  input: 'https://hooks.slack.com/services/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'
   min_confidence: 60
 
 - detector: sendgrid

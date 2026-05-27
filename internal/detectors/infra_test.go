@@ -17,7 +17,7 @@ func TestInfraDetectors(t *testing.T) {
 			tps: []string{
 				`NPM_TOKEN=npm_Abc123Def456Ghi789Jkl012Mno345Pqrstu`,
 				`//registry.npmjs.org/:_authToken=npm_Vb9Xr2Lm7nQp4KwJ01Hs8Yd3Rc6Fg5Mn2Kp9`,
-				`token="npm_Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv4Gs0Tc5Rn7Jp3W"`,
+				`token="npm_Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv4Gs0Tc5Rn7Jp3"`,
 			},
 			tns: []string{
 				`NPM_TOKEN=npm_your_token_here_xxxxxxxxxxxx`,
@@ -72,9 +72,9 @@ func TestInfraDetectors(t *testing.T) {
 			name:     "VaultToken",
 			detector: NewVaultTokenDetector(),
 			tps: []string{
-				`VAULT_TOKEN=s.Vb9Xr2Lm7nQp4KwJ01Hs8Yd3R`,
-				`vault_token: "s.Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv4G"`,
-				`export VAULT_TOKEN=s.Wb4Nm8Jp3Rc6Fg5Mn2Kp9Lm7nQ`,
+				`VAULT_TOKEN=s.Vb9Xr2Lm7nQp4KwJ01Hs8Yd3`,
+				`vault_token: "s.Qr7Nj3Xp9Lm2Wd6Kf8Hb1Yv4"`,
+				`export VAULT_TOKEN=s.Wb4Nm8Jp3Rc6Fg5Mn2Kp9Lm7`,
 			},
 			tns: []string{
 				`VAULT_TOKEN=s.your_token_here_xxxxxx`,

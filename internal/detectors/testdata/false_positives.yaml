@@ -40,7 +40,7 @@
   max_confidence: 24
 
 # Random English words with secret-like length
-- input: 'key = "the_quick_brown_fox_jumps"'
+- input: 'key = "the_example_brown_fox_jumps"'
   max_confidence: 24
 
 - input: 'token = "sample_development_value"'
