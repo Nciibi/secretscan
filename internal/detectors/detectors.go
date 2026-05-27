@@ -120,16 +120,18 @@ func (d *BaseDetector) baseDetect(line string, lineNum int, filePath string) []m
 		reason := buildReason(d.typeName, hasCtx, ctxKeyword, entropyScore, d.validate(matched))
 
 		findings = append(findings, models.Finding{
-			Type:       d.typeName,
-			Severity:   d.adjustSeverity(confidence),
-			Confidence: confidence,
-			File:       filePath,
-			Line:       lineNum,
-			Column:     loc[0] + 1,
-			Preview:    truncateContext(line, loc[0], loc[1]),
-			Reason:     reason,
-			Detector:   d.name,
-			Source:     models.SourceFilesystem,
+			Type:         d.typeName,
+			Severity:     d.adjustSeverity(confidence),
+			Confidence:   confidence,
+			File:         filePath,
+			Line:         lineNum,
+			Column:       loc[0] + 1,
+			Preview:      truncateContext(line, loc[0], loc[1]),
+			Reason:       reason,
+			Detector:     d.name,
+			Source:       models.SourceFilesystem,
+			MatchedValue: matched,
+			LineContent:  line,
 		})
 	}
 	return findings
